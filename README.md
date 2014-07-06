@@ -72,6 +72,6 @@ To run benchmarks
 $ make bench
 ```
 
-[*] Check out examples directory for more examples.
+Check out examples directory for more examples.
 
-[*] MIT Licensed
+MIT Licensed
