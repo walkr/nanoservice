@@ -38,7 +38,7 @@ $ make install
 Or via pip
 
 ```shell
-$ pip install nanoservice
+$ pip install nanoservice (it's broken)
 ```
 
 
