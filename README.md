@@ -1,13 +1,32 @@
 nanoservice
 ===========
-nanoservice is a small Python library for writing lightweight networked services
-using [nanomsg](http://nanomsg.org/)
+nanoservice is a small Python library for writing lightweight networked services using [nanomsg](http://nanomsg.org/)
 
-Using nanoservice you can break up monolithic applications into small,
+With nanoservice you can break up monolithic applications into small,
 specialized services which communicate with each other.
 
 
 ## Install
+
+1) Make sure you have the nanomsg library installed:
+
+```shell
+$ git clone git@github.com:nanomsg/nanomsg.git
+$ ./configure
+$ make
+$ make check
+$ sudo make install
+```
+
+For more details visit the official [nanomsg repo](https://github.com/nanomsg/nanomsg)
+
+On OS X you can also do:
+
+```shell
+$ brew install nanomsg
+```
+
+2) Install nanoservice:
 
 From project directory
 
@@ -22,7 +41,7 @@ $ pip install nanoservice
 ```
 
 
-### Example
+## Example Usage
 
 
 The service:

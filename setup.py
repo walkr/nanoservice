@@ -12,15 +12,18 @@ except ImportError:
     setuptools = None
     from distutils.core import setup
 
-from nanoservice.version import VERSION
-
 
 with open('README.md') as fh:
     long_description = fh.read()
 
+with open('nanoservice/version.py') as fh:
+    for line in fh:
+        if line.startswith('VERSION'):
+            version = line.split('=')[1].strip()
+
 setup(
     name='nanoservice',
-    version=VERSION,
+    version=version,
     packages = ['nanoservice'],
     author='Tony Walker',
     author_email='walkr.walkr@gmail.com',
@@ -31,6 +34,9 @@ setup(
     install_requires=[
         'msgpack-python',
         'nanomsg',
+    ],
+    dependency_links=[
+        'git+ssh://git@github.com/tonysimpson/nanomsg-python.git@master#egg=nanomsg',
     ],
     classifiers=[
         'License :: OSI Approved :: MIT License',
