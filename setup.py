@@ -16,10 +16,10 @@ except ImportError:
 with open('README.md') as fh:
     long_description = fh.read()
 
-with open('nanoservice/version.py') as fh:
+with open('./nanoservice/version.py') as fh:
     for line in fh:
         if line.startswith('VERSION'):
-            version = line.split('=')[1].strip()
+            version = line.split('=')[1].strip().strip("'")
 
 setup(
     name='nanoservice',
