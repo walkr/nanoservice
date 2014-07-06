@@ -1,6 +1,7 @@
 nanoservice
 ===========
-nanoservice is a small Python library for writing lightweight networked services using [nanomsg](http://nanomsg.org/)
+nanoservice is a small Python library for writing lightweight networked services
+using [nanomsg](http://nanomsg.org/)
 
 With nanoservice you can break up monolithic applications into small,
 specialized services which communicate with each other.
