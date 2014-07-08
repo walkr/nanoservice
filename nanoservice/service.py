@@ -113,4 +113,13 @@ class SubService(Service):
     def process(self):
         msg = self.sock.recv()
         fun, data = self.get_fun_and_data(msg)
-        return fun(data) # Also return to allow testing
+
+        result = None
+        try:
+            result = fun(data)
+        except Exception as e:
+            logging.error(e, exc_info=1)
+
+        # Return result to check successful execution
+        # of `fun` when testing
+        return result
