@@ -13,8 +13,14 @@ except ImportError:
     from distutils.core import setup
 
 
-with open('README.md') as fh:
-    long_description = fh.read()
+readme_file = 'README.md'
+try:
+    import pypandoc
+    long_description = pypandoc.convert(readme_file, 'rst')
+except (ImportError, OSError) as e:
+    print('No pypandoc or pandoc: %s' % (e,))
+    with open(readme_file) as fh:
+        long_description = fh.read()
 
 with open('./nanoservice/version.py') as fh:
     for line in fh:
