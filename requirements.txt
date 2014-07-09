@@ -1,2 +1,3 @@
 nanomsg
 msgpack-python
+nose

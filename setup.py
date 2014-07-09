@@ -34,6 +34,7 @@ setup(
     install_requires=[
         'msgpack-python',
         'nanomsg',
+        'nose',
     ],
     dependency_links=[
         'git+ssh://git@github.com/tonysimpson/nanomsg-python.git@master#egg=nanomsg',
