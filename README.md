@@ -6,6 +6,7 @@ using [nanomsg](http://nanomsg.org/)
 With nanoservice you can break up monolithic applications into small,
 specialized services which communicate with each other.
 
+[![Build Status](https://travis-ci.org/walkr/nanoservice.svg?branch=master)](https://travis-ci.org/walkr/nanoservice)
 
 ## Install
 
