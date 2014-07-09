@@ -37,7 +37,7 @@ setup(
         'nose',
     ],
     dependency_links=[
-        'git+ssh://git@github.com/tonysimpson/nanomsg-python.git@master#egg=nanomsg',
+        'git+https://github.com/tonysimpson/nanomsg-python.git@master#egg=nanomsg',
     ],
     classifiers=[
         'License :: OSI Approved :: MIT License',

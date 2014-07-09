@@ -16,4 +16,4 @@ install:
       && popd;
 
 before_script: make install
-script: make test
+script:  LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib nosetests nanoservice/test
