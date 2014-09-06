@@ -26,7 +26,7 @@ SOFTWARE.
 import nanomsg
 import logging
 
-from .encoder import JSONEncoder, MsgPackEncoder
+from .encoder import MsgPackEncoder
 from .error import ServiceError
 
 
@@ -94,7 +94,6 @@ class SubService(Service):
         super(SubService, self).__init__(addr, encoder, socket)
 
     def get_fun_and_data(self, msg):
-        method = None
         for name in self.methods:
             tag = bytes(name.encode('utf-8'))
             if msg.startswith(tag):

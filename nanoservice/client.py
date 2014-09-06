@@ -27,7 +27,7 @@ import uuid
 import nanomsg
 import logging
 
-from .encoder import JSONEncoder, MsgPackEncoder
+from .encoder import MsgPackEncoder
 from .error import ClientError
 
 
