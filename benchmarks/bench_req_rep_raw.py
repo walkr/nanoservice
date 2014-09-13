@@ -16,7 +16,7 @@ def start_service(addr, n):
     s.sock.close()
     duration = time.time() - started
 
-    print('Raw REP service stats:\n')
+    print('Raw REP service stats:')
     util.print_stats(n, duration)
     return
 
@@ -35,16 +35,17 @@ def bench(client, n):
         assert msg == res
     duration = time.time() - started
 
-    print('Raw REQ client stats:\n')
+    print('Raw REQ client stats:')
     util.print_stats(n, duration)
+
 
 def run(N, addr):
 
     # Fork service
-    service_process = Process(target=start_service, args=(addr,N))
+    service_process = Process(target=start_service, args=(addr, N))
     service_process.start()
 
-    time.sleep(0.1) # Wait for service connect
+    time.sleep(0.1)  # Wait for service connect
     # Create client and make reqs
     c = Client(addr)
     bench(c, N)
@@ -56,14 +57,14 @@ def run(N, addr):
 
 if __name__ == '__main__':
 
-    N = 100000
+    N = 50000
+
     print('')
-    print('------------------------------')
-    print('Benchmark raw REQ-REP over IPC')
-    print('------------------------------\n')
+    print('Req-Rep over IPC (raw)')
+    print('-----------------------------')
     run(N, 'ipc:///tmp/bench-raw-reqrep-ipc.sock')
 
-    print('------------------------------')
-    print('Benchmark raw REQ-REP over TCP')
-    print('------------------------------\n')
-    run(N, 'tcp://127.0.0.1:5050')
+    print('')
+    print('Req-Rep over TCP (raw)')
+    print('-----------------------------')
+    run(N, 'tcp://127.0.0.1:5052')
