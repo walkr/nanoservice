@@ -54,7 +54,7 @@ class Service(object):
         # Execute the requested method
         fun = self.methods.get(method)
         if not fun:
-            response['error'] = 'Method not found'
+            response['error'] = 'Method `{}` not found'.format(method)
         else:
             try:
                 response['result'] = fun(*args)
