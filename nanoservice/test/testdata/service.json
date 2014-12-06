@@ -1,0 +1,4 @@
+{
+    "db.name": "test",
+    "service.endpoint": "ipc:///whatever"
+}

@@ -8,3 +8,7 @@ class ServiceError(NanoServiceError):
 
 class ClientError(NanoServiceError):
     pass
+
+
+class ConfigError(NanoServiceError):
+    pass
