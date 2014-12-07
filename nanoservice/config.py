@@ -1,10 +1,10 @@
 """ Read configuration for a service from a json file """
 
 import io
+import re
 import json
 
 from .client import Client
-from .error import ConfigError
 
 
 class DotDict(dict):
@@ -38,12 +38,9 @@ def load(filepath=None, filecontent=None, clients=True):
             filecontent = fh.read().decode('utf-8')
     configs = json.loads(filecontent)
 
-    if 'service.endpoint' not in configs:
-        raise ConfigError('Missing `service.endpoint` from config file')
-
     # Update the conf items (Create clients if necessary)
     for key, value in configs.items():
         conf[key] = value
-        if key.endswith('.endpoint') and clients:
+        if clients and re.match('inproc:|ipc:|tcp:', value):
             conf[key] = Client(value)
     return conf
