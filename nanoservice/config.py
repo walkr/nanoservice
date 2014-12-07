@@ -7,6 +7,16 @@ from .client import Client
 from .error import ConfigError
 
 
+class DotDict(dict):
+    """ Access a dictionary like an object """
+
+    def __getattr__(self, key):
+        return self[key]
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+
 def load(filepath=None, filecontent=None, clients=True):
     """ Read the json file located at `filepath`
 
@@ -19,7 +29,7 @@ def load(filepath=None, filecontent=None, clients=True):
         config.load(filepath=None, filecontent=None):
         Provide either a filepath or a json string
     """
-    conf = {}
+    conf = DotDict()
 
     # Read json configuration
     assert filepath or filecontent
