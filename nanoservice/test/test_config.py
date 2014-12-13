@@ -27,6 +27,13 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(C.keys(), self.expected.keys())
         self.assertTrue(C.values(), self.expected.values())
 
+    def test_dot_dict_get_and_set(self):
+        d = config.DotDict()
+        d['name'] = 'John Doe'
+        self.assertEqual(getattr(d, 'name'), 'John Doe')
+        d.age = '20'
+        self.assertEqual(getattr(d, 'age'), '20')
+
 
 if __name__ == '__main__':
     unittest.main()

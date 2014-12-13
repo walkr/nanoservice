@@ -17,7 +17,7 @@ class DotDict(dict):
         self[key] = value
 
 
-def load(filepath=None, filecontent=None, clients=True):
+def load(filepath=None, filecontent=None, clients=True, rename=True):
     """ Read the json file located at `filepath`
 
     If `filecontent` is specified, its content will be json decoded
@@ -41,6 +41,11 @@ def load(filepath=None, filecontent=None, clients=True):
     # Update the conf items (Create clients if necessary)
     for key, value in configs.items():
         conf[key] = value
-        if clients and re.match('inproc:|ipc:|tcp:', value):
+        if clients and isinstance(value, str) and \
+                re.match('inproc:|ipc:|tcp:', value) and '.client' in key:
             conf[key] = Client(value)
+        if rename:
+            if key.endswith('.client'):
+                new_key = key.replace('.client', '')
+                conf[new_key] = conf.pop(key)
     return conf
