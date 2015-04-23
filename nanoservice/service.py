@@ -36,6 +36,7 @@ class Service(object):
         self.addr = addr
         self.encoder = encoder or MsgPackEncoder()
         self.methods = {}
+        self.descriptions = {}
         self.sock = socket if socket else nanomsg.Socket(nanomsg.REP)
         self.sock.bind(self.addr)
 
@@ -63,8 +64,9 @@ class Service(object):
                 response['error'] = str(e)
         return response
 
-    def register(self, name, fun):
+    def register(self, name, fun, description=None):
         self.methods[name] = fun
+        self.descriptions[name] = description
 
     def process(self):
         payload = self.recv()
