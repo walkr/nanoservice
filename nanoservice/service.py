@@ -23,6 +23,8 @@ SOFTWARE.
 
 '''
 
+import sys
+import signal
 import nanomsg
 import logging
 
@@ -83,9 +85,16 @@ class Service(object):
     def start(self):
         """ Start and listen for calls """
 
+        signal.signal(signal.SIGINT, self.stop)
         logging.info('* Service started on {}'.format(self.addr))
+
         while True:
             self.process()
+
+    def stop(self, signal=None, frame=None):
+        logging.info('* Shutting down service ...')
+        self.sock.close()
+        sys.exit(0)
 
 
 class SubService(Service):
