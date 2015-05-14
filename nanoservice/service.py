@@ -27,6 +27,7 @@ import sys
 import signal
 import nanomsg
 import logging
+import threading
 
 from .encoder import MsgPackEncoder
 from .error import ServiceError
@@ -85,9 +86,10 @@ class Service(object):
     def start(self):
         """ Start and listen for calls """
 
-        signal.signal(signal.SIGINT, self.stop)
-        logging.info('* Service started on {}'.format(self.addr))
+        if threading.current_thread().name == 'MainThread':
+            signal.signal(signal.SIGINT, self.stop)
 
+        logging.info('* Service started on {}'.format(self.addr))
         while True:
             self.process()
 
