@@ -21,22 +21,23 @@ class Authenticator(object):
     def signed(self, encoded):
         """ Sign encoded bytes and append signature """
         signature = self.sign(encoded)
-        return signature + encoded
+        return encoded + signature
 
     def unsigned(self, encoded):
         """ Remove signature and return just the message """
-        _, message = self.split(encoded)
+        message, _ = self.split(encoded)
         return message
 
     def split(self, encoded):
         """ Split into signature and message """
-        signature = encoded[:self.sig_size]
-        message = encoded[self.sig_size:]
-        return signature, message
+        maxlen = len(encoded) - self.sig_size
+        message = encoded[:maxlen]
+        signature = encoded[-self.sig_size:]
+        return message, signature
 
     def auth(self, encoded):
         """ Validate integrity of encoded bytes """
-        signature, message = self.split(encoded)
+        message, signature = self.split(encoded)
         computed = self.sign(message)
         if not hmac.compare_digest(signature, computed):
             raise AuthenticatorInvalidSignature
