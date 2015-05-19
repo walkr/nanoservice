@@ -20,15 +20,16 @@ class TestAuthenticator(unittest.TestCase):
     def test_bad_signature(self):
         message = b'message'
         signed = self.authenticator.signed(message)
-        print('signed msg is: ', signed)
-        signed += b'123456789abacdef'
-        print(signed)
+        fake_sig = self.authenticator.digestmod('fake'.encode('utf-8'))
+        fake_sig = fake_sig.hexdigest().encode('utf-8')
+        signed = fake_sig + signed[len(fake_sig):]
         with self.assertRaises(error.AuthenticatorInvalidSignature):
             self.authenticator.auth(signed)
 
     def test_unsigned(self):
         message = b'my super secret message'
         signed = self.authenticator.signed(message)
+        print('signed is:', signed)
         unsigned = self.authenticator.unsigned(signed)
         self.assertEqual(message, unsigned)
 
