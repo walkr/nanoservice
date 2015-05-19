@@ -1,6 +1,11 @@
 Changelog
 =========
 
+### 0.4.1
+
+* Improve authenticator performance
+
+
 ### 0.4.0
 
 * Rename Service and Client `recv` method to `receive`
