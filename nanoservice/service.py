@@ -29,33 +29,43 @@ import nanomsg
 import logging
 import threading
 
+from .crypto import Authenticator
 from .encoder import MsgPackEncoder
 from .error import ServiceError
+from .error import RequestParseError
 
 
 class Service(object):
 
-    def __init__(self, addr, encoder=None, socket=None):
+    def __init__(self, addr, encoder=None, socket=None,
+                 auth=False, secret=None, digestmod=None):
         self.addr = addr
         self.encoder = encoder or MsgPackEncoder()
         self.methods = {}
         self.descriptions = {}
         self.sock = socket if socket else nanomsg.Socket(nanomsg.REP)
         self.sock.bind(self.addr)
+        self.authenticator = Authenticator(secret, digestmod) if auth else None
 
-    def recv(self):
+    def receive(self):
+        """ Receive request from client """
         payload = self.sock.recv()
+        if self.authenticator:
+            self.authenticator.auth(payload)
+            payload = self.authenticator.unsigned(payload)
         decoded = self.encoder.decode(payload)
         return decoded
 
     def send(self, response):
+        """ Encode and sign (optional) the send through socket """
         response = self.encoder.encode(response)
+        if self.authenticator:
+            response = self.authenticator.signed(response)
         self.sock.send(response)
 
     def execute(self, method, args, ref):
+        """ Execute the method with args """
         response = {'result': None, 'error': None, 'ref': ref}
-
-        # Execute the requested method
         fun = self.methods.get(method)
         if not fun:
             response['error'] = 'Method `{}` not found'.format(method)
@@ -68,13 +78,25 @@ class Service(object):
         return response
 
     def register(self, name, fun, description=None):
+        """ Register function on this service """
         self.methods[name] = fun
         self.descriptions[name] = description
 
+    def parse(self, payload):
+        """ Parse client request """
+        try:
+            method, args, ref = payload
+        except Exception as e:
+            raise RequestParseError(e)
+        else:
+            return method, args, ref
+
     def process(self):
-        payload = self.recv()
-        logging.debug(
-            '* Server received payload: {}'.format(payload))
+        """ Receive and process request """
+        payload = self.receive()
+        logging.debug('* Server received payload: {}'.format(payload))
+        method, args, ref = self.parse(payload)
+
         try:
             method, args, ref = payload
             response = self.execute(method, args, ref)

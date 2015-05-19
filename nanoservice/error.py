@@ -12,3 +12,13 @@ class ClientError(NanoServiceError):
 
 class ConfigError(NanoServiceError):
     pass
+
+
+class AuthenticatorInvalidSignature(NanoServiceError):
+    """ Message could not be authenticated """
+    pass
+
+
+class RequestParseError(NanoServiceError):
+    """ Message from client could not be parsed """
+    pass

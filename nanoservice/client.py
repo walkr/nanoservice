@@ -27,6 +27,7 @@ import uuid
 import nanomsg
 import logging
 
+from .crypto import Authenticator
 from .encoder import MsgPackEncoder
 from .error import ClientError
 
@@ -34,11 +35,13 @@ from .error import ClientError
 class Client(object):
     """ A requester client """
 
-    def __init__(self, addr, encoder=None, socket=None):
+    def __init__(self, addr, encoder=None, socket=None,
+                 auth=False, secret=None, digestmod=None):
         self.addr = addr
         self.encoder = encoder or MsgPackEncoder()
         self.sock = socket if socket else nanomsg.Socket(nanomsg.REQ)
         self.sock.connect(self.addr)
+        self.authenticator = Authenticator(secret, digestmod) if auth else None
 
     def build_payload(self, method, args):
         ref = str(uuid.uuid4())
@@ -50,10 +53,28 @@ class Client(object):
     def decode(self, msg):
         return self.encoder.decode(msg)
 
+    def send(self, payload):
+        """ Send payload through the socket """
+        payload = self.encode(payload)
+        if self.authenticator:
+            payload = self.authenticator.signed(payload)
+        self.sock.send(payload)
+
+    def receive(self):
+        """ Receive response from socket """
+        response = self.sock.recv()
+        if self.authenticator:
+            self.authenticator.auth(response)
+            response = self.authenticator.unsigned(response)
+        decoded = self.encoder.decode(response)
+        return decoded
+
     def call(self, method, *args):
+        """ Call the remote service """
         payload = self.build_payload(method, args)
-        self.sock.send(self.encode(payload))
-        res = self.decode(self.sock.recv())
+        self.send(payload)
+
+        res = self.receive()
         assert payload[2] == res['ref']
         return res['result'], res['error']
 

@@ -28,7 +28,7 @@ class TestService(BaseTestCase):
         sent = ['a', 'b', 'c']
         encoded = self.client.encoder.encode(sent)
         self.client.sock.send(encoded)
-        got = self.service.recv()
+        got = self.service.receive()
         self.assertEqual(sent, got)
 
     def test_send_method(self):

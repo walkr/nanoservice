@@ -38,7 +38,7 @@ class TestClient(BaseTestCase):
         payload = self.client.build_payload(method, args)
         self.client.sock.send(self.client.encode(payload))
         # Service side ops
-        method, args, ref = self.service.recv()
+        method, args, ref = self.service.receive()
         self.assertEqual(method, 'echo')
         self.assertEqual(args, 'hello world')
         self.assertEqual(ref, payload[2])

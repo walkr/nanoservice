@@ -1,5 +1,3 @@
-import unittest
-import logging
 from multiprocessing import Process
 
 from nanoservice import Service
@@ -7,44 +5,51 @@ from nanoservice import Client
 from nanoservice import encoder
 
 
-class BaseTestCase(unittest.TestCase):
-
-    def setUp(self):
-        self.addr = 'ipc:///tmp/test-service01.sock'
-
-    def tearDown(self):
-        self.client.sock.close()
-
-    def start_service(self, addr, encoder):
-        s = Service(addr, encoder=encoder)
-        s.register('divide', lambda x,y: x/y)
-        s.start()
+def check(res, expected):
+    assert res == expected
 
 
-class TestEncodingDecoding(BaseTestCase):
-    """ Test the communication between endpoints using various
-    various mechanisms """
-
-    def _run_test_with_encoder(self, encoder):
-        proc = Process(
-            target=self.start_service,
-            args=(self.addr, encoder)
-        )
-        proc.start()
-        self.client = Client(self.addr, encoder=encoder)
-        res, err = self.client.call('divide', 10, 2)
-        proc.terminate()
-        expected = 5
-        self.assertEqual(expected, res)
-
-    def test_json_encoder(self):
-        self._run_test_with_encoder(encoder.JSONEncoder())
-
-    def test_msgpack_encoder(self):
-        self._run_test_with_encoder(encoder.MsgPackEncoder())
+def start_service(addr, encoder, auth=False, secret=None):
+    """ Start a service with options """
+    s = Service(addr, encoder=encoder, auth=auth, secret=secret)
+    s.register('none', lambda: None)
+    s.register('divide', lambda x, y: x/y)
+    s.register('upper', lambda dct: {k: v.upper() for k, v in dct.items()})
+    s.start()
 
 
+# ------------------
 
 
-if __name__ == '__main__':
-    unittest.main()
+TESTS = [
+    (('divide', [10, 2]), 5.0),
+    (('none', []), None),
+    (('upper', [{'a': 'a'}]), {'a': 'A'})
+]
+
+
+def test_encoding():
+    """ Test encoding with defferent options """
+    addr = 'ipc:///tmp/test-service01.sock'
+
+    auth_schemes = [(False, None), (True, 'my secret')]
+    encoders = [encoder.JSONEncoder(), encoder.MsgPackEncoder()]
+
+    for test, expected in TESTS:
+        for enc in encoders:
+            for scheme in auth_schemes:
+
+                method, args = test
+                auth, secret = scheme
+
+                proc = Process(
+                    target=start_service,
+                    args=(addr, enc, auth, secret))
+                proc.start()
+
+                client = Client(addr, encoder=enc, auth=auth, secret=secret)
+                res, err = client.call(method, *args)
+                client.sock.close()
+                proc.terminate()
+                yield check, res, expected
+                # self.assertEqual(expected, res)
