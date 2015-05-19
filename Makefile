@@ -1,4 +1,4 @@
-.PHONY: help
+.PHONY: help test
 
 help:
 	@echo
@@ -14,7 +14,7 @@ help:
 	@echo
 
 test:
-	@nosetests nanoservice/test # --nologcapture
+	@nosetests test  # --nologcapture
 
 install:
 	@python setup.py install
@@ -24,8 +24,11 @@ clean:
 
 bench:
 	@python benchmarks/bench_req_rep.py
+	@python benchmarks/bench_req_rep_auth.py
 	@python benchmarks/bench_req_rep_raw.py
+
 	@python benchmarks/bench_pub_sub.py
+	@python benchmarks/bench_pub_sub_auth.py
 	@python benchmarks/bench_pub_sub_raw.py
 
 distribute:
