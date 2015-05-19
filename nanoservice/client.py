@@ -29,7 +29,6 @@ import logging
 
 from .crypto import Authenticator
 from .encoder import MsgPackEncoder
-from .error import ClientError
 
 
 class Client(object):
@@ -72,27 +71,9 @@ class Client(object):
     def call(self, method, *args):
         """ Call the remote service """
         payload = self.build_payload(method, args)
+        logging.debug('* Client will send payload is: {}'.format(payload))
         self.send(payload)
 
         res = self.receive()
         assert payload[2] == res['ref']
         return res['result'], res['error']
-
-
-class PubClient(Client):
-    """ A publisher client """
-
-    def __init__(self, addr, encoder=None):
-        socket = nanomsg.Socket(nanomsg.PUB)
-        super(PubClient, self).__init__(addr, encoder, socket)
-
-    def call(self, method, *args):
-        raise ClientError('Operation not allowed on this type of client')
-
-    def build_payload(self, tag, data):
-        payload = bytes(tag.encode('utf-8')) + self.encode(data)
-        return payload
-
-    def publish(self, tag, data):
-        payload = self.build_payload(tag, data)
-        self.sock.send(payload)

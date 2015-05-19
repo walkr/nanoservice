@@ -31,7 +31,6 @@ import threading
 
 from .crypto import Authenticator
 from .encoder import MsgPackEncoder
-from .error import ServiceError
 from .error import RequestParseError
 
 
@@ -119,41 +118,3 @@ class Service(object):
         logging.info('* Shutting down service ...')
         self.sock.close()
         sys.exit(0)
-
-
-class SubService(Service):
-    """ A service which subscribes """
-
-    def __init__(self, addr, encoder=None):
-        socket = nanomsg.Socket(nanomsg.SUB)
-        super(SubService, self).__init__(addr, encoder, socket)
-
-    def get_fun_and_data(self, msg):
-        for name in self.methods:
-            tag = bytes(name.encode('utf-8'))
-            if msg.startswith(tag):
-                fun = self.methods.get(name)
-                data = self.encoder.decode(msg[len(tag):])
-                return fun, data
-        return None, None
-
-    def register(self, name, fun):
-        raise ServiceError('Operation not allowed on this type of service')
-
-    def subscribe(self, name, fun):
-        super(SubService, self).register(name, fun)
-        self.sock.set_string_option(nanomsg.SUB, nanomsg.SUB_SUBSCRIBE, name)
-
-    def process(self):
-        msg = self.sock.recv()
-        fun, data = self.get_fun_and_data(msg)
-
-        result = None
-        try:
-            result = fun(data)
-        except Exception as e:
-            logging.error(e, exc_info=1)
-
-        # Return result to check successful execution
-        # of `fun` when testing
-        return result
