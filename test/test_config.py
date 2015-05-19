@@ -17,7 +17,7 @@ class TestConfig(unittest.TestCase):
         pass
 
     def test_config_load(self):
-        C = config.load("nanoservice/test/testdata/service.json", clients=False)
+        C = config.load("test/testdata/service.json", clients=False)
         self.assertTrue(C.keys(), self.expected.keys())
         self.assertTrue(C.values(), self.expected.values())
 

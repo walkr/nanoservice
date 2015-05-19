@@ -22,7 +22,7 @@ class TestAuthenticator(unittest.TestCase):
         signed = self.authenticator.signed(message)
         fake_sig = self.authenticator.digestmod('fake'.encode('utf-8'))
         fake_sig = fake_sig.hexdigest().encode('utf-8')
-        signed = fake_sig + signed[len(fake_sig):]
+        signed = message + fake_sig
         with self.assertRaises(error.AuthenticatorInvalidSignature):
             self.authenticator.auth(signed)
 

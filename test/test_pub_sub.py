@@ -1,6 +1,4 @@
 import unittest
-import logging
-from multiprocessing import Process
 
 from nanoservice import Subscriber
 from nanoservice import Publisher
