@@ -12,10 +12,12 @@ class Authenticator(object):
         self.secret = secret.encode('utf-8')
         self.digestmod = digestmod or hashlib.sha256
         self.sig_size = self.digestmod().digest_size * 2
+        self._h = hmac.new(self.secret, digestmod=self.digestmod)
 
     def sign(self, encoded):
         """ Return authentication signature of encoded bytes """
-        h = hmac.new(self.secret, encoded, digestmod=self.digestmod)
+        h = self._h.copy()
+        h.update(encoded)
         return h.hexdigest().encode('utf-8')
 
     def signed(self, encoded):
