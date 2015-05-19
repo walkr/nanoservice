@@ -2,4 +2,5 @@
 *.py[co]
 dist
 build
+.tox
 *.egg-info
