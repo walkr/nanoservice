@@ -22,3 +22,11 @@ class AuthenticatorInvalidSignature(NanoServiceError):
 class RequestParseError(NanoServiceError):
     """ Message from client could not be parsed """
     pass
+
+
+class PublisherError(NanoServiceError):
+    pass
+
+
+class SubscriberError(NameError):
+    pass

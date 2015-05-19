@@ -2,16 +2,16 @@ import unittest
 import logging
 from multiprocessing import Process
 
-from nanoservice import SubService
-from nanoservice import PubClient
+from nanoservice import Subscriber
+from nanoservice import Publisher
 
 
 class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         self.addr = 'inproc://test'
-        self.client = PubClient(self.addr)
-        self.service = SubService(self.addr)
+        self.client = Publisher(self.addr)
+        self.service = Subscriber(self.addr)
         self.service.subscribe('upper', lambda line: line.upper())
         self.service.subscribe('lower', lambda line: line.lower())
 

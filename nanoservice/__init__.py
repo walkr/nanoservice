@@ -1,4 +1,5 @@
-from .client import Client, PubClient
-from .service import Service, SubService
+from .client import *
+from .service import *
+from .pubsub import *
 from .error import *
 from .version import VERSION
