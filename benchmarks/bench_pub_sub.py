@@ -1,6 +1,6 @@
 import time
 from multiprocessing import Process
-from nanoservice import SubService, PubClient
+from nanoservice import Subscriber, Publisher
 
 import util
 
@@ -8,7 +8,7 @@ import util
 def start_service(addr, n):
     """ Start a service """
 
-    s = SubService(addr)
+    s = Subscriber(addr)
 
     def do_something(line):
         pass
@@ -49,7 +49,7 @@ def run(N, addr):
 
     time.sleep(0.5)  # Wait for service connect
     # Create client and make reqs
-    c = PubClient(addr)
+    c = Publisher(addr)
     bench(c, N)
     c.sock.close()
 

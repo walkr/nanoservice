@@ -1,24 +1,27 @@
 import time
-import nanomsg
 from multiprocessing import Process
 from nanoservice import Subscriber, Publisher
 
 import util
 
 
-def start_service(addr, n):
+def start_service(addr, n, auth, secret):
     """ Start a service """
 
-    s = Subscriber(addr)
-    s.sock.set_string_option(nanomsg.SUB, nanomsg.SUB_SUBSCRIBE, 'test')
+    s = Subscriber(addr, auth=auth, secret=secret)
+
+    def do_something(line):
+        pass
+
+    s.subscribe('test', do_something)
 
     started = time.time()
     for _ in range(n):
-        msg = s.sock.recv()
+        s.process()
     s.sock.close()
     duration = time.time() - started
 
-    print('Raw SUB service stats:')
+    print('Subscriber service stats:')
     util.print_stats(n, duration)
     return
 
@@ -30,24 +33,24 @@ def bench(client, n):
     # Time client publish operations
     # ------------------------------
     started = time.time()
-    msg = b'test line'
     for i in items:
-        client.sock.send(msg)
+        client.publish('test', i)
     duration = time.time() - started
 
-    print('Raw PUB client stats:')
+    print('Publisher client stats:')
     util.print_stats(n, duration)
 
 
 def run(N, addr):
 
     # Fork service
-    service_process = Process(target=start_service, args=(addr, N))
+    service_process = Process(
+        target=start_service, args=(addr, N, True, 'secret'))
     service_process.start()
 
     time.sleep(0.5)  # Wait for service connect
     # Create client and make reqs
-    c = Publisher(addr)
+    c = Publisher(addr, auth=True, secret='secret')
     bench(c, N)
     c.sock.close()
 
@@ -60,11 +63,11 @@ if __name__ == '__main__':
     N = 100000
 
     print('')
-    print('Pub-Sub over IPC (raw)')
+    print('Pub-Sub over IPC (w/ authentication)')
     print('-----------------------------')
     run(N, 'ipc:///tmp/bench-pub-sub-ipc.sock')
 
     print('')
-    print('Pub-Sub over TCP (raw)')
+    print('Pub-Sub over TCP (w/ authentication)')
     print('-----------------------------')
-    run(N, 'tcp://127.0.0.1:5054')
+    run(N, 'tcp://127.0.0.1:5053')
