@@ -71,7 +71,7 @@ class Client(object):
     def call(self, method, *args):
         """ Call the remote service """
         payload = self.build_payload(method, args)
-        logging.debug('* Client will send payload is: {}'.format(payload))
+        logging.debug('* Client will send payload: {}'.format(payload))
         self.send(payload)
 
         res = self.receive()
