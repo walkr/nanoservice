@@ -10,7 +10,7 @@ class BaseTestCase(unittest.TestCase):
         addr = 'inproc://test'
         self.client = Client(addr)
         self.service = Service(addr)
-        self.service.register('divide', lambda x,y: x/y)
+        self.service.register('divide', lambda x, y: x/y)
         self.service.register('echo', lambda x: x)
 
     def tearDown(self):

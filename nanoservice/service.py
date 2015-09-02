@@ -31,7 +31,11 @@ import threading
 
 from .crypto import Authenticator
 from .encoder import MsgPackEncoder
+
+from .error import DecodeError
 from .error import RequestParseError
+from .error import AuthenticateError
+from .error import AuthenticatorInvalidSignature
 
 
 class Service(object):
@@ -46,14 +50,31 @@ class Service(object):
         self.sock.bind(self.addr)
         self.authenticator = Authenticator(secret, digestmod) if auth else None
 
-    def receive(self):
-        """ Receive request from client """
-        payload = self.sock.recv()
-        if self.authenticator:
+    def authenticate(self, payload):
+        """ Authenticate payload then return unsigned payload """
+        if not self.authenticator:
+            return payload
+        try:
             self.authenticator.auth(payload)
-            payload = self.authenticator.unsigned(payload)
-        decoded = self.encoder.decode(payload)
-        return decoded
+            return self.authenticator.unsigned(payload)
+        except AuthenticatorInvalidSignature:
+            raise
+        except Exception as e:
+            raise AuthenticateError(str(e))
+
+    def decode(self, payload):
+        """ Decode payload """
+        try:
+            return self.encoder.decode(payload)
+        except Exception as e:
+            raise DecodeError(str(e))
+
+    def receive(self):
+        """ Receive from socket, authenticate and decode payload """
+        payload = self.sock.recv()
+        payload = self.authenticate(payload)
+        payload = self.decode(payload)
+        return payload
 
     def send(self, response):
         """ Encode and sign (optional) the send through socket """
@@ -64,6 +85,7 @@ class Service(object):
 
     def execute(self, method, args, ref):
         """ Execute the method with args """
+
         response = {'result': None, 'error': None, 'ref': ref}
         fun = self.methods.get(method)
         if not fun:
@@ -91,18 +113,31 @@ class Service(object):
             return method, args, ref
 
     def process(self):
-        """ Receive and process request """
-        payload = self.receive()
-        logging.debug('* Server received payload: {}'.format(payload))
-        method, args, ref = self.parse(payload)
+        """ Receive data from socket and process request """
+
+        response = None
 
         try:
-            method, args, ref = payload
+            payload = self.receive()
+            method, args, ref = self.parse(payload)
             response = self.execute(method, args, ref)
-        except Exception as e:
-            logging.error(e, exc_info=1)
+
+        except AuthenticateError as e:
+            logging.error('* Error in authenticate {}'.format(e), exc_info=1)
+
+        except AuthenticatorInvalidSignature as e:
+            logging.error('* Error authenticating {}'.format(e), exc_info=1)
+
+        except DecodeError as e:
+            logging.error('* Error authenticating {}'.format(e), exc_info=1)
+
+        except RequestParseError as e:
+            logging.error('* Error parsing {}'.format(e), exc_info=1)
+
         else:
-            self.send(response)
+            logging.debug('* Server received payload: {}'.format(payload))
+
+        self.send(response) if response is not None else self.send('')
 
     def start(self):
         """ Start and listen for calls """

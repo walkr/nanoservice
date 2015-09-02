@@ -30,3 +30,13 @@ class PublisherError(NanoServiceError):
 
 class SubscriberError(NameError):
     pass
+
+
+class DecodeError(ServiceError):
+    """ Service cannot decode request """
+    pass
+
+
+class AuthenticateError(ServiceError):
+    """ Service cannot authenticate request """
+    pass

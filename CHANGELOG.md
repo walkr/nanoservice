@@ -1,6 +1,13 @@
 Changelog
 =========
 
+### 0.5.0
+
+* Part of service module were rewritten, so that it does not explode when
+  failing to decode a request
+* Better testing
+
+
 ### 0.4.1
 
 * Improve authenticator performance
