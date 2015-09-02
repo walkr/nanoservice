@@ -3,8 +3,14 @@ import logging
 
 from .service import Service
 from .client import Client
+
 from .error import SubscriberError
 from .error import PublisherError
+
+from .error import DecodeError
+from .error import RequestParseError
+from .error import AuthenticateError
+from .error import AuthenticatorInvalidSignature
 
 
 class Subscriber(Service):
@@ -16,12 +22,14 @@ class Subscriber(Service):
         super(Subscriber, self).__init__(
             addr, encoder, socket, auth, secret, digestmod)
 
-    def get_fun_and_data(self, msg):
+    def get_fun_and_data(self, subscription):
+        """ Fetch the function registered for a certain subscription """
+
         for name in self.methods:
             tag = bytes(name.encode('utf-8'))
-            if msg.startswith(tag):
+            if subscription.startswith(tag):
                 fun = self.methods.get(name)
-                data = self.encoder.decode(msg[len(tag):])
+                data = self.encoder.decode(subscription[len(tag):])
                 return fun, data
         return None, None
 
@@ -42,8 +50,26 @@ class Subscriber(Service):
         return payload
 
     def process(self):
-        msg = self.receive()
-        fun, data = self.get_fun_and_data(msg)
+
+        try:
+            subscription = self.receive()
+
+        except AuthenticateError as e:
+            logging.error('* Error in authenticate {}'.format(e), exc_info=1)
+
+        except AuthenticatorInvalidSignature as e:
+            logging.error('* Error authenticating {}'.format(e), exc_info=1)
+
+        except DecodeError as e:
+            logging.error('* Error authenticating {}'.format(e), exc_info=1)
+
+        except RequestParseError as e:
+            logging.error('* Error parsing {}'.format(e), exc_info=1)
+
+        else:
+            logging.debug('* Server received payload: {}'.format(subscription))
+
+        fun, data = self.get_fun_and_data(subscription)
 
         result = None
         try:
@@ -51,8 +77,7 @@ class Subscriber(Service):
         except Exception as e:
             logging.error(e, exc_info=1)
 
-        # Return result to check successful execution
-        # of `fun` when testing
+        # Return result to check successful execution of `fun` when testing
         return result
 
 

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### Current
+
+* Rewrote process method of Subscriber
+
 ### 0.5.0
 
 * Part of service module were rewritten, so that it does not explode when
