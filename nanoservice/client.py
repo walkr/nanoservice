@@ -34,6 +34,7 @@ from .encoder import MsgPackEncoder
 class Client(object):
     """ A requester client """
 
+    # pylint: disable=too-many-arguments
     def __init__(self, addr, encoder=None, socket=None,
                  auth=False, secret=None, digestmod=None):
         self.addr = addr
@@ -42,14 +43,18 @@ class Client(object):
         self.sock.connect(self.addr)
         self.authenticator = Authenticator(secret, digestmod) if auth else None
 
-    def build_payload(self, method, args):
+    @classmethod
+    def build_payload(cls, method, args):
+        """Add an uuid for each call"""
         ref = str(uuid.uuid4())
         return (method, args, ref)
 
     def encode(self, payload):
+        """Encode the message via the provider encoder"""
         return self.encoder.encode(payload)
 
     def decode(self, msg):
+        """Decode the message via the provider encoder"""
         return self.encoder.decode(msg)
 
     def send(self, payload):
@@ -68,6 +73,7 @@ class Client(object):
         decoded = self.encoder.decode(response)
         return decoded
 
+    # pylint: disable=logging-format-interpolation
     def call(self, method, *args):
         """ Call the remote service """
         payload = self.build_payload(method, args)
