@@ -35,6 +35,7 @@ class Client(object):
     """ A requester client """
 
     # pylint: disable=too-many-arguments
+    # pylint: disable=no-member
     def __init__(self, addr, encoder=None, socket=None,
                  auth=False, secret=None, digestmod=None):
         self.addr = addr

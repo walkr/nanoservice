@@ -18,7 +18,8 @@ from .error import AuthenticatorInvalidSignature
 class Subscriber(Service):
     """ Subscriber """
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
+    # pylint: disable=no-member
     def __init__(self, addr, encoder=None,
                  auth=False, secret=None, digestmod=None):
         socket = nanomsg.Socket(nanomsg.SUB)
@@ -39,6 +40,7 @@ class Subscriber(Service):
     def register(self, name, fun, description=None):
         raise SubscriberError('Operation not allowed on this type of service')
 
+    # pylint: disable=no-member
     def subscribe(self, tag, fun):
         """ Subscribe and register a function """
         super(Subscriber, self).register(tag, fun)
@@ -90,6 +92,7 @@ class Publisher(Client):
     """ Publisher """
 
     #pylint: disable=too-many-arguments
+    # pylint: disable=no-member
     def __init__(self, addr, encoder=None,
                  auth=False, secret=None, digestmod=None):
         socket = nanomsg.Socket(nanomsg.PUB)
