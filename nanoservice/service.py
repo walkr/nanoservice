@@ -39,7 +39,7 @@ from .error import AuthenticatorInvalidSignature
 
 
 class Service(object):
-    """ A Requester service"""
+    """ A service which responds to requests """
 
     # pylint: disable=too-many-arguments
     # pylint: disable=no-member
@@ -128,16 +128,20 @@ class Service(object):
             response = self.execute(method, args, ref)
 
         except AuthenticateError as exception:
-            logging.error('Service Error in authenticate {}'.format(exception), exc_info=1)
+            logging.error(
+                'Service Error in authenticate {}'.format(exception), exc_info=1)
 
         except AuthenticatorInvalidSignature as exception:
-            logging.error('Service Error authenticating {}'.format(exception), exc_info=1)
+            logging.error(
+                'Service Error authenticating {}'.format(exception), exc_info=1)
 
         except DecodeError as exception:
-            logging.error('Service Error authenticating {}'.format(exception), exc_info=1)
+            logging.error(
+                'Service Error authenticating {}'.format(exception), exc_info=1)
 
         except RequestParseError as exception:
-            logging.error('Service Error parsing {}'.format(exception), exc_info=1)
+            logging.error(
+                'Service Error parsing {}'.format(exception), exc_info=1)
 
         else:
             logging.debug('Service Server received payload: {}'.format(payload))
