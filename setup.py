@@ -28,7 +28,7 @@ def read_long_description(readme_file):
 
 setup(
     name='nanoservice',
-    version='0.5.2',
+    version='0.5.3',
     packages=['nanoservice'],
     author='Tony Walker',
     author_email='walkr.walkr@gmail.com',
