@@ -9,6 +9,7 @@ import sys
 
 from setuptools import setup
 
+
 def read_long_description(readme_file):
     """ Read package long description from README file """
     try:
@@ -27,7 +28,7 @@ def read_long_description(readme_file):
 
 setup(
     name='nanoservice',
-    version='0.5.0',
+    version='0.5.2',
     packages=['nanoservice'],
     author='Tony Walker',
     author_email='walkr.walkr@gmail.com',
