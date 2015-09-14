@@ -157,12 +157,12 @@ class Service(object):
         if threading.current_thread().name == 'MainThread':
             signal.signal(signal.SIGINT, self.stop)
 
-        logging.info('* Service started on {}'.format(self.addr))
+        logging.info('Service started on {}'.format(self.addr))
         while True:
             self.process()
 
-    def stop(self):
-        """Shut down the service"""
-        logging.info('* Shutting down service ...')
+    def stop(self, dummy_signum=None, dummy_frame=None):
+        """ Shutdown the service (this method is also a signal handler) """
+        logging.info('Shutting down service ...')
         self.sock.close()
         sys.exit(0)
