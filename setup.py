@@ -1,47 +1,33 @@
+"""Nanoservice installation script
+
+https://github.com/walkr/nanoservice
+"""
+
 #!/usr/bin/env python
 
 import sys
 
-try:
-    import setuptools
-    from setuptools import setup
-except ImportError:
-    setuptools = None
-    from distutils.core import setup
-
-
-is_py3 = sys.version_info.major == 3
-readme_file = 'README.md'
-
+from setuptools import setup
 
 def read_long_description(readme_file):
     """ Read package long description from README file """
     try:
         import pypandoc
-    except (ImportError, OSError) as e:
-        print('No pypandoc or pandoc: %s' % (e,))
-        if is_py3:
-            fh = open(readme_file, encoding='utf-8')
+    except (ImportError, OSError) as exception:
+        print('No pypandoc or pandoc: %s' % (exception,))
+        if sys.version_info.major == 3:
+            handle = open(readme_file, encoding='utf-8')
         else:
-            fh = open(readme_file)
-        long_description = fh.read()
-        fh.close()
+            handle = open(readme_file)
+        long_description = handle.read()
+        handle.close()
         return long_description
     else:
         return pypandoc.convert(readme_file, 'rst')
 
-
-def read_version():
-    """ Read package version """
-    with open('./nanoservice/version.py') as fh:
-        for line in fh:
-            if line.startswith('VERSION'):
-                return line.split('=')[1].strip().strip("'")
-
-
 setup(
     name='nanoservice',
-    version=read_version(),
+    version='0.5.0',
     packages=['nanoservice'],
     author='Tony Walker',
     author_email='walkr.walkr@gmail.com',
@@ -49,7 +35,7 @@ setup(
     license='MIT',
     description='nanoservice is a small Python library for '
                 'writing lightweight networked services using nanomsg',
-    long_description=read_long_description(readme_file),
+    long_description=read_long_description('README.md'),
     install_requires=[
         'msgpack-python',
         'nanomsg',

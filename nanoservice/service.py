@@ -39,7 +39,10 @@ from .error import AuthenticatorInvalidSignature
 
 
 class Service(object):
+    """ A Requester service"""
 
+    # pylint: disable=too-many-arguments
+    # pylint: disable=no-member
     def __init__(self, addr, encoder=None, socket=None,
                  auth=False, secret=None, digestmod=None):
         self.addr = addr
@@ -59,15 +62,15 @@ class Service(object):
             return self.authenticator.unsigned(payload)
         except AuthenticatorInvalidSignature:
             raise
-        except Exception as e:
-            raise AuthenticateError(str(e))
+        except Exception as exception:
+            raise AuthenticateError(str(exception))
 
     def decode(self, payload):
         """ Decode payload """
         try:
             return self.encoder.decode(payload)
-        except Exception as e:
-            raise DecodeError(str(e))
+        except Exception as exception:
+            raise DecodeError(str(exception))
 
     def receive(self):
         """ Receive from socket, authenticate and decode payload """
@@ -93,9 +96,9 @@ class Service(object):
         else:
             try:
                 response['result'] = fun(*args)
-            except Exception as e:
-                logging.error(e, exc_info=1)
-                response['error'] = str(e)
+            except Exception as exception:
+                logging.error(exception, exc_info=1)
+                response['error'] = str(exception)
         return response
 
     def register(self, name, fun, description=None):
@@ -103,15 +106,17 @@ class Service(object):
         self.methods[name] = fun
         self.descriptions[name] = description
 
-    def parse(self, payload):
+    @classmethod
+    def parse(cls, payload):
         """ Parse client request """
         try:
             method, args, ref = payload
-        except Exception as e:
-            raise RequestParseError(e)
+        except Exception as exception:
+            raise RequestParseError(exception)
         else:
             return method, args, ref
 
+    # pylint: disable=logging-format-interpolation
     def process(self):
         """ Receive data from socket and process request """
 
@@ -122,22 +127,25 @@ class Service(object):
             method, args, ref = self.parse(payload)
             response = self.execute(method, args, ref)
 
-        except AuthenticateError as e:
-            logging.error('* Error in authenticate {}'.format(e), exc_info=1)
+        except AuthenticateError as exception:
+            logging.error('Service Error in authenticate {}'.format(exception), exc_info=1)
 
-        except AuthenticatorInvalidSignature as e:
-            logging.error('* Error authenticating {}'.format(e), exc_info=1)
+        except AuthenticatorInvalidSignature as exception:
+            logging.error('Service Error authenticating {}'.format(exception), exc_info=1)
 
-        except DecodeError as e:
-            logging.error('* Error authenticating {}'.format(e), exc_info=1)
+        except DecodeError as exception:
+            logging.error('Service Error authenticating {}'.format(exception), exc_info=1)
 
-        except RequestParseError as e:
-            logging.error('* Error parsing {}'.format(e), exc_info=1)
+        except RequestParseError as exception:
+            logging.error('Service Error parsing {}'.format(exception), exc_info=1)
 
         else:
-            logging.debug('* Server received payload: {}'.format(payload))
+            logging.debug('Service Server received payload: {}'.format(payload))
 
-        self.send(response) if response is not None else self.send('')
+        if response:
+            self.send(response)
+        else:
+            self.send('')
 
     def start(self):
         """ Start and listen for calls """
@@ -149,7 +157,8 @@ class Service(object):
         while True:
             self.process()
 
-    def stop(self, signal=None, frame=None):
+    def stop(self):
+        """Shut down the service"""
         logging.info('* Shutting down service ...')
         self.sock.close()
         sys.exit(0)

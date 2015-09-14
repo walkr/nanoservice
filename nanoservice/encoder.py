@@ -1,17 +1,28 @@
+"""Nanoservice encoders"""
+
 import json
 import logging
 import msgpack
 
 
 class Encoder(object):
-    def encode(self, data):
+    """Base encoder class"""
+
+    # pylint: disable=unused-argument
+    @classmethod
+    def encode(cls, data):
+        """Base encode function"""
         logging.error('Encoding fun not implemented')
 
-    def decode(self, data):
+    # pylint: disable=unused-argument
+    @classmethod
+    def decode(cls, data):
+        """Base decode function"""
         logging.error('Decoding fun not implemented')
 
 
 class JSONEncoder(Encoder):
+    """Json encoder for nanoservice message"""
     def __init__(self):
         super(JSONEncoder, self).__init__()
 
@@ -23,6 +34,7 @@ class JSONEncoder(Encoder):
 
 
 class MsgPackEncoder(Encoder):
+    """MsgPack encoder for nanoservice message"""
     def __init__(self):
         super(MsgPackEncoder, self).__init__()
 

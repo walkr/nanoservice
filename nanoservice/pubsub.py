@@ -1,3 +1,5 @@
+"""Nanoservice PUBSUB"""
+
 import nanomsg
 import logging
 
@@ -16,6 +18,8 @@ from .error import AuthenticatorInvalidSignature
 class Subscriber(Service):
     """ Subscriber """
 
+    # pylint: disable=too-many-arguments
+    # pylint: disable=no-member
     def __init__(self, addr, encoder=None,
                  auth=False, secret=None, digestmod=None):
         socket = nanomsg.Socket(nanomsg.SUB)
@@ -33,9 +37,10 @@ class Subscriber(Service):
                 return fun, data
         return None, None
 
-    def register(self, name, fun):
+    def register(self, name, fun, description=None):
         raise SubscriberError('Operation not allowed on this type of service')
 
+    # pylint: disable=no-member
     def subscribe(self, tag, fun):
         """ Subscribe and register a function """
         super(Subscriber, self).register(tag, fun)
@@ -49,33 +54,35 @@ class Subscriber(Service):
             payload = self.authenticator.unsigned(payload)
         return payload
 
+    # pylint: disable=logging-format-interpolation
+    # pylint: disable=duplicate-code
     def process(self):
 
         try:
             subscription = self.receive()
 
-        except AuthenticateError as e:
-            logging.error('* Error in authenticate {}'.format(e), exc_info=1)
+        except AuthenticateError as exception:
+            logging.error('PubSub Error in authenticate {}'.format(exception), exc_info=1)
 
-        except AuthenticatorInvalidSignature as e:
-            logging.error('* Error authenticating {}'.format(e), exc_info=1)
+        except AuthenticatorInvalidSignature as exception:
+            logging.error('PubSub Error authenticating {}'.format(exception), exc_info=1)
 
-        except DecodeError as e:
-            logging.error('* Error authenticating {}'.format(e), exc_info=1)
+        except DecodeError as exception:
+            logging.error('PubSub Error authenticating {}'.format(exception), exc_info=1)
 
-        except RequestParseError as e:
-            logging.error('* Error parsing {}'.format(e), exc_info=1)
+        except RequestParseError as exception:
+            logging.error('PubSub Error parsing {}'.format(exception), exc_info=1)
 
         else:
-            logging.debug('* Server received payload: {}'.format(subscription))
+            logging.debug('PubSub Server received payload: {}'.format(subscription))
 
         fun, data = self.get_fun_and_data(subscription)
 
         result = None
         try:
             result = fun(data)
-        except Exception as e:
-            logging.error(e, exc_info=1)
+        except Exception as exception:
+            logging.error(exception, exc_info=1)
 
         # Return result to check successful execution of `fun` when testing
         return result
@@ -84,6 +91,8 @@ class Subscriber(Service):
 class Publisher(Client):
     """ Publisher """
 
+    #pylint: disable=too-many-arguments
+    # pylint: disable=no-member
     def __init__(self, addr, encoder=None,
                  auth=False, secret=None, digestmod=None):
         socket = nanomsg.Socket(nanomsg.PUB)
@@ -104,5 +113,6 @@ class Publisher(Client):
         return payload
 
     def publish(self, tag, data):
+        """Publish a message"""
         payload = self.build_payload(tag, data)
         self.send(payload)

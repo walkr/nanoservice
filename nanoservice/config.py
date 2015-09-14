@@ -34,8 +34,8 @@ def load(filepath=None, filecontent=None, clients=True, rename=True):
     # Read json configuration
     assert filepath or filecontent
     if not filecontent:
-        with io.FileIO(filepath) as fh:
-            filecontent = fh.read().decode('utf-8')
+        with io.FileIO(filepath) as handle:
+            filecontent = handle.read().decode('utf-8')
     configs = json.loads(filecontent)
 
     # Update the conf items (Create clients if necessary)
