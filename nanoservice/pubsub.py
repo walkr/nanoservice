@@ -16,15 +16,14 @@ from .error import AuthenticatorInvalidSignature
 
 
 class Subscriber(Service):
-    """ Subscriber """
+    """ A subscriber service binds to a nanomsg address and processes
+    subscriptions according to the methods registered on it """
 
     # pylint: disable=too-many-arguments
     # pylint: disable=no-member
-    def __init__(self, addr, encoder=None,
-                 auth=False, secret=None, digestmod=None):
+    def __init__(self, addr, encoder=None, authenticator=None):
         socket = nanomsg.Socket(nanomsg.SUB)
-        super(Subscriber, self).__init__(
-            addr, encoder, socket, auth, secret, digestmod)
+        super(Subscriber, self).__init__(addr, encoder, socket, authenticator)
 
     def get_fun_and_data(self, subscription):
         """ Fetch the function registered for a certain subscription """
@@ -62,19 +61,29 @@ class Subscriber(Service):
             subscription = self.receive()
 
         except AuthenticateError as exception:
-            logging.error('PubSub Error in authenticate {}'.format(exception), exc_info=1)
+            logging.error(
+                'Subscriber error while authenticating request: {}'
+                .format(exception), exc_info=1)
 
         except AuthenticatorInvalidSignature as exception:
-            logging.error('PubSub Error authenticating {}'.format(exception), exc_info=1)
+            logging.error(
+                'Subscriber error while authenticating request: {}'
+                .format(exception), exc_info=1)
 
         except DecodeError as exception:
-            logging.error('PubSub Error authenticating {}'.format(exception), exc_info=1)
+            logging.error(
+                'Subscriber error while decoding request: {}'
+                .format(exception), exc_info=1)
 
         except RequestParseError as exception:
-            logging.error('PubSub Error parsing {}'.format(exception), exc_info=1)
+            logging.error(
+                'Subscriber error while parsing request: {}'
+                .format(exception), exc_info=1)
 
         else:
-            logging.debug('PubSub Server received payload: {}'.format(subscription))
+            logging.debug(
+                'Subscriber received payload: {}'
+                .format(subscription))
 
         fun, data = self.get_fun_and_data(subscription)
 
@@ -89,15 +98,13 @@ class Subscriber(Service):
 
 
 class Publisher(Client):
-    """ Publisher """
+    """ A publisher connects to a nanomsg address and publishes messages """
 
     #pylint: disable=too-many-arguments
     # pylint: disable=no-member
-    def __init__(self, addr, encoder=None,
-                 auth=False, secret=None, digestmod=None):
+    def __init__(self, addr, encoder=None, authenticator=None):
         socket = nanomsg.Socket(nanomsg.PUB)
-        super(Publisher, self).__init__(
-            addr, encoder, socket, auth, secret, digestmod)
+        super(Publisher, self).__init__(addr, encoder, socket, authenticator)
 
     def call(self, method, *args):
         raise PublisherError('Operation not allowed')

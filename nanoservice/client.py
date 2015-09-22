@@ -27,7 +27,6 @@ import uuid
 import nanomsg
 import logging
 
-from .crypto import Authenticator
 from .encoder import MsgPackEncoder
 
 
@@ -36,13 +35,12 @@ class Client(object):
 
     # pylint: disable=too-many-arguments
     # pylint: disable=no-member
-    def __init__(self, addr, encoder=None, socket=None,
-                 auth=False, secret=None, digestmod=None):
+    def __init__(self, addr, encoder=None, socket=None, authenticator=None):
         self.addr = addr
         self.encoder = encoder or MsgPackEncoder()
         self.sock = socket if socket else nanomsg.Socket(nanomsg.REQ)
         self.sock.connect(self.addr)
-        self.authenticator = Authenticator(secret, digestmod) if auth else None
+        self.authenticator = authenticator
 
     @classmethod
     def build_payload(cls, method, args):

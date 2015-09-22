@@ -1,17 +1,19 @@
+import hashlib
 from multiprocessing import Process
 
 from nanoservice import Service
 from nanoservice import Client
 from nanoservice import encoder
+from nanoservice import Authenticator
 
 
 def check(res, expected):
     assert res == expected
 
 
-def start_service(addr, encoder, auth=False, secret=None):
+def start_service(addr, encoder, authenticator=None):
     """ Start a service with options """
-    s = Service(addr, encoder=encoder, auth=auth, secret=secret)
+    s = Service(addr, encoder=encoder, authenticator=authenticator)
     s.register('none', lambda: None)
     s.register('divide', lambda x, y: x/y)
     s.register('upper', lambda dct: {k: v.upper() for k, v in dct.items()})
@@ -32,22 +34,20 @@ def test_encoding():
     """ Test encoding with defferent options """
     addr = 'ipc:///tmp/test-service01.sock'
 
-    auth_schemes = [(False, None), (True, 'my secret')]
+    authenticators = [None, Authenticator('my-secret', hashlib.sha256)]
     encoders = [encoder.JSONEncoder(), encoder.MsgPackEncoder()]
 
     for test, expected in TESTS:
         for enc in encoders:
-            for scheme in auth_schemes:
+            for authenticator in authenticators:
 
                 method, args = test
-                auth, secret = scheme
-
                 proc = Process(
                     target=start_service,
-                    args=(addr, enc, auth, secret))
+                    args=(addr, enc, authenticator))
                 proc.start()
 
-                client = Client(addr, encoder=enc, auth=auth, secret=secret)
+                client = Client(addr, encoder=enc, authenticator=authenticator)
                 res, err = client.call(method, *args)
                 client.sock.close()
                 proc.terminate()

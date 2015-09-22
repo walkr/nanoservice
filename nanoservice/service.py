@@ -29,7 +29,6 @@ import nanomsg
 import logging
 import threading
 
-from .crypto import Authenticator
 from .encoder import MsgPackEncoder
 
 from .error import DecodeError
@@ -43,15 +42,14 @@ class Service(object):
 
     # pylint: disable=too-many-arguments
     # pylint: disable=no-member
-    def __init__(self, addr, encoder=None, socket=None,
-                 auth=False, secret=None, digestmod=None):
+    def __init__(self, addr, encoder=None, socket=None, authenticator=None):
         self.addr = addr
         self.encoder = encoder or MsgPackEncoder()
         self.methods = {}
         self.descriptions = {}
         self.sock = socket if socket else nanomsg.Socket(nanomsg.REP)
         self.sock.bind(self.addr)
-        self.authenticator = Authenticator(secret, digestmod) if auth else None
+        self.authenticator = authenticator
 
     def authenticate(self, payload):
         """ Authenticate payload then return unsigned payload """
@@ -129,22 +127,26 @@ class Service(object):
 
         except AuthenticateError as exception:
             logging.error(
-                'Service Error in authenticate {}'.format(exception), exc_info=1)
+                'Service error while authenticating request: {}'
+                .format(exception), exc_info=1)
 
         except AuthenticatorInvalidSignature as exception:
             logging.error(
-                'Service Error authenticating {}'.format(exception), exc_info=1)
+                'Service error while authenticating request: {}'
+                .format(exception), exc_info=1)
 
         except DecodeError as exception:
             logging.error(
-                'Service Error authenticating {}'.format(exception), exc_info=1)
+                'Service error while decoding request: {}'
+                .format(exception), exc_info=1)
 
         except RequestParseError as exception:
             logging.error(
-                'Service Error parsing {}'.format(exception), exc_info=1)
+                'Service error while parsing request: {}'
+                .format(exception), exc_info=1)
 
         else:
-            logging.debug('Service Server received payload: {}'.format(payload))
+            logging.debug('Service received payload: {}'.format(payload))
 
         if response:
             self.send(response)
