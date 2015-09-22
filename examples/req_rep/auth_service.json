@@ -1,0 +1,5 @@
+{
+    "authenticator": {
+        "secret": "my-super-secret"
+    }
+}
