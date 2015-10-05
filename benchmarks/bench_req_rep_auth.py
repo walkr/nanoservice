@@ -1,13 +1,19 @@
 import time
 from multiprocessing import Process
-from nanoservice import Service, Client
+
+from nanoservice import Authenticator
+from nanoservice import Service
+from nanoservice import Client
 
 import util
 
+auth = Authenticator('secret')
 
-def start_service(addr, n, auth=False, secret=None):
+
+def start_service(addr, n, authenticator):
     """ Start a service """
-    s = Service(addr, auth=auth, secret=secret)
+
+    s = Service(addr, authenticator=authenticator)
     s.register('add', lambda x, y: x+y)
 
     started = time.time()
@@ -37,12 +43,12 @@ def bench(client, n):
 def run(N, addr):
     # Fork service
     service_process = Process(
-        target=start_service, args=(addr, N, True, 'secret'))
+        target=start_service, args=(addr, N, auth))
     service_process.start()
     time.sleep(0.1)  # Wait for service to connect
 
     # Create client and make reqs
-    c = Client(addr, auth=True, secret='secret')
+    c = Client(addr, authenticator=auth)
     bench(c, N)
     c.sock.close()
 
