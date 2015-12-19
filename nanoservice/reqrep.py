@@ -1,7 +1,7 @@
 '''
 The MIT License (MIT)
 
-Copyright (c) 2014 Tony Walker
+Copyright (c) 2016 Tony Walker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,66 +23,37 @@ SOFTWARE.
 
 '''
 
-import sys
-import signal
+import uuid
 import nanomsg
 import logging
-import threading
-
-from .encoder import MsgPackEncoder
 
 from .error import DecodeError
 from .error import RequestParseError
 from .error import AuthenticateError
 from .error import AuthenticatorInvalidSignature
+from .encoder import MsgPackEncoder
+
+from .core import Endpoint
+from .core import Process
 
 
-class Service(object):
+class Responder(Endpoint, Process):
     """ A service which responds to requests """
 
     # pylint: disable=too-many-arguments
     # pylint: disable=no-member
-    def __init__(self, addr, encoder=None, socket=None, authenticator=None):
-        self.addr = addr
-        self.encoder = encoder or MsgPackEncoder()
+    def __init__(self, address, encoder=None, authenticator=None,
+                 socket=None, bind=True, timeouts=(None, None)):
+
+        # Defaults
+        socket = socket or nanomsg.Socket(nanomsg.REP)
+        encoder = encoder or MsgPackEncoder()
+
+        super(Responder, self).__init__(
+            socket, address, bind, encoder, authenticator, timeouts)
+
         self.methods = {}
         self.descriptions = {}
-        self.sock = socket if socket else nanomsg.Socket(nanomsg.REP)
-        self.sock.bind(self.addr)
-        self.authenticator = authenticator
-
-    def authenticate(self, payload):
-        """ Authenticate payload then return unsigned payload """
-        if not self.authenticator:
-            return payload
-        try:
-            self.authenticator.auth(payload)
-            return self.authenticator.unsigned(payload)
-        except AuthenticatorInvalidSignature:
-            raise
-        except Exception as exception:
-            raise AuthenticateError(str(exception))
-
-    def decode(self, payload):
-        """ Decode payload """
-        try:
-            return self.encoder.decode(payload)
-        except Exception as exception:
-            raise DecodeError(str(exception))
-
-    def receive(self):
-        """ Receive from socket, authenticate and decode payload """
-        payload = self.sock.recv()
-        payload = self.authenticate(payload)
-        payload = self.decode(payload)
-        return payload
-
-    def send(self, response):
-        """ Encode and sign (optional) the send through socket """
-        response = self.encoder.encode(response)
-        if self.authenticator:
-            response = self.authenticator.signed(response)
-        self.sock.send(response)
 
     def execute(self, method, args, ref):
         """ Execute the method with args """
@@ -153,18 +124,36 @@ class Service(object):
         else:
             self.send('')
 
-    def start(self):
-        """ Start and listen for calls """
 
-        if threading.current_thread().name == 'MainThread':
-            signal.signal(signal.SIGINT, self.stop)
+class Requester(Endpoint):
+    """ A requester client """
 
-        logging.info('Service started on {}'.format(self.addr))
-        while True:
-            self.process()
+    # pylint: disable=too-many-arguments
+    # pylint: disable=no-member
+    def __init__(self, address, encoder=None, authenticator=None,
+                 socket=None, bind=False, timeouts=(None, None)):
 
-    def stop(self, dummy_signum=None, dummy_frame=None):
-        """ Shutdown the service (this method is also a signal handler) """
-        logging.info('Shutting down service ...')
-        self.sock.close()
-        sys.exit(0)
+        # Defaults
+        socket = socket or nanomsg.Socket(nanomsg.REQ)
+        encoder = encoder or MsgPackEncoder()
+
+        super(Requester, self).__init__(
+            socket, address, bind, encoder, authenticator, timeouts)
+
+    @classmethod
+    def build_payload(cls, method, args):
+        """ Build the payload to be sent to a `Responder` """
+        ref = str(uuid.uuid4())
+        return (method, args, ref)
+
+    # pylint: disable=logging-format-interpolation
+    def call(self, method, *args):
+        """ Make a call to a `Responder` and return the result """
+
+        payload = self.build_payload(method, args)
+        logging.debug('* Client will send payload: {}'.format(payload))
+        self.send(payload)
+
+        res = self.receive()
+        assert payload[2] == res['ref']
+        return res['result'], res['error']

@@ -5,6 +5,7 @@ class NanoServiceError(Exception):
     """Base exception for Nanoservice"""
     pass
 
+
 class ServiceError(NanoServiceError):
     """Service Generic Exception"""
     pass
@@ -34,16 +35,27 @@ class PublisherError(NanoServiceError):
     """Publisher Generic Exception"""
     pass
 
+
 class SubscriberError(NameError):
     """Subscriber Generic Exception"""
     pass
 
 
 class DecodeError(ServiceError):
-    """ Service cannot decode request """
+    """ Cannot decode request """
+    pass
+
+
+class EncodeError(ServiceError):
+    """ Cannot encode request """
     pass
 
 
 class AuthenticateError(ServiceError):
-    """ Service cannot authenticate request """
+    """ Cannot authenticate request """
+    pass
+
+
+class EndpointError(ServiceError):
+    """ Endpoint Error """
     pass
