@@ -1,0 +1,7 @@
+{
+    "db.name": "test",
+    "rq.requester": "ipc:///whatever",
+    "rs.responder": "ipc:///whatever",
+    "pb.publisher": "ipc:///whatever",
+    "sb.subscriber": "ipc:///whatever"
+}

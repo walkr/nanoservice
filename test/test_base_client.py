@@ -1,21 +1,21 @@
 import unittest
 
-from nanoservice import Service
-from nanoservice import Client
+from nanoservice import Responder
+from nanoservice import Requester
 
 
 class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         addr = 'inproc://test'
-        self.client = Client(addr)
-        self.service = Service(addr)
-        self.service.register('divide', lambda x, y: x/y)
+        self.client = Requester(addr)
+        self.service = Responder(addr)
+        self.service.register('divide', lambda x, y: x / y)
         self.service.register('echo', lambda x: x)
 
     def tearDown(self):
-        self.client.sock.close()
-        self.service.sock.close()
+        self.client.socket.close()
+        self.service.socket.close()
 
 
 class TestClient(BaseTestCase):
@@ -33,11 +33,11 @@ class TestClient(BaseTestCase):
         self.assertEqual(data, decoded)
 
     def test_call_wo_receive(self):
-        # Client side ops
+        # Requester side ops
         method, args = 'echo', 'hello world'
         payload = self.client.build_payload(method, args)
-        self.client.sock.send(self.client.encode(payload))
-        # Service side ops
+        self.client.socket.send(self.client.encode(payload))
+        # Responder side ops
         method, args, ref = self.service.receive()
         self.assertEqual(method, 'echo')
         self.assertEqual(args, 'hello world')
@@ -45,10 +45,14 @@ class TestClient(BaseTestCase):
 
     def test_basic_socket_operation(self):
         msg = 'abc'
-        self.client.sock.send(msg)
-        res = self.service.sock.recv().decode('utf-8')
+        self.client.socket.send(msg)
+        res = self.service.socket.recv().decode('utf-8')
         self.assertEqual(msg, res)
 
+    def test_timeout(self):
+        c = Requester('inproc://timeout', timeouts=(1, 1))
+        c.socket.send('hello')
+        self.assertRaises(Exception, c.socket.recv)
 
 if __name__ == '__main__':
     unittest.main()

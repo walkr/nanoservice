@@ -1,8 +1,8 @@
 import hashlib
 from multiprocessing import Process
 
-from nanoservice import Service
-from nanoservice import Client
+from nanoservice import Responder
+from nanoservice import Requester
 from nanoservice import encoder
 from nanoservice import Authenticator
 
@@ -13,9 +13,9 @@ def check(res, expected):
 
 def start_service(addr, encoder, authenticator=None):
     """ Start a service with options """
-    s = Service(addr, encoder=encoder, authenticator=authenticator)
+    s = Responder(addr, encoder=encoder, authenticator=authenticator)
     s.register('none', lambda: None)
-    s.register('divide', lambda x, y: x/y)
+    s.register('divide', lambda x, y: x / y)
     s.register('upper', lambda dct: {k: v.upper() for k, v in dct.items()})
     s.start()
 
@@ -47,9 +47,10 @@ def test_encoding():
                     args=(addr, enc, authenticator))
                 proc.start()
 
-                client = Client(addr, encoder=enc, authenticator=authenticator)
+                client = Requester(addr, encoder=enc,
+                                   authenticator=authenticator)
                 res, err = client.call(method, *args)
-                client.sock.close()
+                client.socket.close()
                 proc.terminate()
                 yield check, res, expected
                 # self.assertEqual(expected, res)

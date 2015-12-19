@@ -1,7 +1,7 @@
 import unittest
 
-from nanoservice import Service
-from nanoservice import Client
+from nanoservice import Responder
+from nanoservice import Requester
 
 from nanoservice import error
 from nanoservice import crypto
@@ -11,17 +11,17 @@ class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         addr = 'inproc://test'
-        self.client = Client(addr)
-        self.service = Service(addr)
-        self.service.register('divide', lambda x, y: x/y)
+        self.client = Requester(addr)
+        self.service = Responder(addr)
+        self.service.register('divide', lambda x, y: x / y)
         self.service.register('echo', lambda x: x)
 
     def tearDown(self):
-        self.client.sock.close()
-        self.service.sock.close()
+        self.client.socket.close()
+        self.service.socket.close()
 
 
-class TestService(BaseTestCase):
+class TestResponder(BaseTestCase):
 
     def test_register_method(self):
         f = lambda x: x
@@ -30,7 +30,7 @@ class TestService(BaseTestCase):
     def test_recv_method(self):
         sent = ['a', 'b', 'c']
         encoded = self.client.encoder.encode(sent)
-        self.client.sock.send(encoded)
+        self.client.socket.send(encoded)
         got = self.service.receive()
         self.assertEqual(sent, got)
 
@@ -38,7 +38,7 @@ class TestService(BaseTestCase):
         sent = ['a', 'b', 'c']
         self.test_recv_method()  # To send data to service
         self.service.send(sent)
-        got = self.client.encoder.decode(self.client.sock.recv())
+        got = self.client.encoder.decode(self.client.socket.recv())
         self.assertEqual(sent, got)
 
     def test_execute_method_w_success(self):
@@ -58,13 +58,13 @@ class TestService(BaseTestCase):
 
     def test_service_authenticate_simple(self):
         payload = 'no authentication set up. payload will be unchanged'
-        got = self.service.authenticate(payload)
+        got = self.service.verify(payload)
         self.assertEqual(got, payload)
 
     # Test error throwing
 
     def test_payload_decode_error(self):
-        self.client.sock.send('"abc')
+        self.client.socket.send('"abc')
         self.assertRaises(error.DecodeError, self.service.receive)
 
     def test_payload_parse_error(self):
@@ -82,7 +82,7 @@ class TestService(BaseTestCase):
 
         payload = self.client.encode(payload)
         payload = auth.signed(payload)
-        self.client.sock.send(payload)
+        self.client.socket.send(payload)
         self.assertRaises(
             error.AuthenticateError, self.service.receive)
 
@@ -94,7 +94,7 @@ class TestService(BaseTestCase):
 
         payload = self.client.encode(payload)
         payload = auth.signed(payload)
-        self.client.sock.send(b'123' + payload)
+        self.client.socket.send(b'123' + payload)
         self.assertRaises(
             error.AuthenticatorInvalidSignature, self.service.receive)
 

@@ -1,29 +1,33 @@
 import json
 import unittest
 
+from nanoservice import *
 from nanoservice import config
 
 
 class TestConfig(unittest.TestCase):
 
     def setUp(self):
-        self.addr = 'ipc:///tmp/test-service.sock'
+        self.addr = 'ipc:///whatever'
         self.expected = {
-            "db.name": "test",
-            "service.endpoint": self.addr
+            'db.name': 'test',
+            'rq.requester': 'ipc:///whatever',
+            'rs.responder': 'ipc:///whatever',
+            'pb.publisher': 'ipc:///whatever',
+            'sb.subscriber': 'ipc:///whatever',
         }
 
     def tearDown(self):
         pass
 
     def test_config_load(self):
-        C = config.load("test/testdata/service.json", clients=False)
+        C = config.load("test/testdata/configuration.json")
         self.assertTrue(C.keys(), self.expected.keys())
         self.assertTrue(C.values(), self.expected.values())
 
     def test_config_load_with_content(self):
         filec = json.dumps(self.expected)
-        C = config.load(filecontent=filec, clients=False)
+        C = config.load(filecontent=filec)
         self.assertTrue(C.keys(), self.expected.keys())
         self.assertTrue(C.values(), self.expected.values())
 

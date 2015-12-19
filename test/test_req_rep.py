@@ -1,23 +1,23 @@
 import unittest
 from multiprocessing import Process
 
-from nanoservice import Service
-from nanoservice import Client
-
+from nanoservice import Responder
+from nanoservice import Requester
 from nanoservice import encoder
+from nanoservice import Authenticator
 
 
 class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.addr = 'ipc:///tmp/test-service01.sock'
+        self.addr = 'ipc:///tmp/reqrep-test-service.sock'
 
     def tearDown(self):
-        self.client.sock.close()
+        self.client.socket.close()
 
-    def start_service(self, addr):
-        s = Service(addr)
-        s.register('divide', lambda x, y: x/y)
+    def start_service(self, addr, authenticator=None):
+        s = Responder(addr, authenticator=authenticator)
+        s.register('divide', lambda x, y: x / y)
         s.start()
 
 
@@ -26,7 +26,7 @@ class TestTCPProtocol(BaseTestCase):
     def make_req(self, *args):
         proc = Process(target=self.start_service, args=(self.addr,))
         proc.start()
-        self.client = Client(self.addr)
+        self.client = Requester(self.addr)
         res, err = self.client.call('divide', *args)
         proc.terminate()
         return res, err
@@ -42,12 +42,30 @@ class TestTCPProtocol(BaseTestCase):
         self.assertTrue(err is not None)
 
 
+class TestAuthentication(BaseTestCase):
+
+    def make_req(self, *args):
+        auth = Authenticator('my-secret')
+        proc = Process(target=self.start_service,
+                       args=(self.addr, auth))
+        proc.start()
+        self.client = Requester(self.addr, authenticator=auth)
+        res, err = self.client.call('divide', *args)
+        proc.terminate()
+        return res, err
+
+    def test_req_rep_w_success(self):
+        res, err = self.make_req(12, 2)
+        self.assertEqual(6, res)
+        self.assertTrue(err is None)
+
+
 class TestErrors(BaseTestCase):
 
     def make_req(self, *args):
         proc = Process(target=self.start_service, args=(self.addr,))
         proc.start()
-        self.client = Client(self.addr)
+        self.client = Requester(self.addr)
 
         # Change encoder to force service to fail on encoding
         # since the service uses a MsgPack encoder
