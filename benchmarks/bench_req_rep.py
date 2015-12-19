@@ -8,7 +8,7 @@ import util
 def start_service(addr, n):
     """ Start a service """
     s = Service(addr)
-    s.register('add', lambda x, y: x+y)
+    s.register('add', lambda x, y: x + y)
 
     started = time.time()
     for _ in range(n):
@@ -23,7 +23,7 @@ def start_service(addr, n):
 
 def bench(client, n):
     """ Benchmark n requests """
-    pairs = [(x, x+1) for x in range(n)]
+    pairs = [(x, x + 1) for x in range(n)]
 
     started = time.time()
     for pair in pairs:
@@ -43,7 +43,7 @@ def run(N, addr):
     # Create client and make reqs
     c = Client(addr)
     bench(c, N)
-    c.sock.close()
+    c.socket.close()
 
     time.sleep(0.2)
     service_process.terminate()

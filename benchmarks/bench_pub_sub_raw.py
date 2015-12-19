@@ -10,12 +10,12 @@ def start_service(addr, n):
     """ Start a service """
 
     s = Subscriber(addr)
-    s.sock.set_string_option(nanomsg.SUB, nanomsg.SUB_SUBSCRIBE, 'test')
+    s.socket.set_string_option(nanomsg.SUB, nanomsg.SUB_SUBSCRIBE, 'test')
 
     started = time.time()
     for _ in range(n):
-        msg = s.sock.recv()
-    s.sock.close()
+        msg = s.socket.recv()
+    s.socket.close()
     duration = time.time() - started
 
     print('Raw SUB service stats:')
@@ -32,7 +32,7 @@ def bench(client, n):
     started = time.time()
     msg = b'test line'
     for i in items:
-        client.sock.send(msg)
+        client.socket.send(msg)
     duration = time.time() - started
 
     print('Raw PUB client stats:')
@@ -49,7 +49,7 @@ def run(N, addr):
     # Create client and make reqs
     c = Publisher(addr)
     bench(c, N)
-    c.sock.close()
+    c.socket.close()
 
     time.sleep(1)
     service_process.terminate()

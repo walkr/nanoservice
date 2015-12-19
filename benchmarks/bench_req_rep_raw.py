@@ -11,9 +11,9 @@ def start_service(addr, n):
 
     started = time.time()
     for _ in range(n):
-        msg = s.sock.recv()
-        s.sock.send(msg)
-    s.sock.close()
+        msg = s.socket.recv()
+        s.socket.send(msg)
+    s.socket.close()
     duration = time.time() - started
 
     print('Raw REP service stats:')
@@ -30,8 +30,8 @@ def bench(client, n):
     started = time.time()
     msg = b'x'
     for i in items:
-        client.sock.send(msg)
-        res = client.sock.recv()
+        client.socket.send(msg)
+        res = client.socket.recv()
         assert msg == res
     duration = time.time() - started
 
@@ -49,7 +49,7 @@ def run(N, addr):
     # Create client and make reqs
     c = Client(addr)
     bench(c, N)
-    c.sock.close()
+    c.socket.close()
 
     time.sleep(0.2)
     service_process.terminate()

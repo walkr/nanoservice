@@ -18,7 +18,7 @@ def start_service(addr, n):
     started = time.time()
     for _ in range(n):
         s.process()
-    s.sock.close()
+    s.socket.close()
     duration = time.time() - started
 
     print('Subscriber service stats:')
@@ -51,7 +51,7 @@ def run(N, addr):
     # Create client and make reqs
     c = Publisher(addr)
     bench(c, N)
-    c.sock.close()
+    c.socket.close()
 
     time.sleep(1)
     service_process.terminate()
