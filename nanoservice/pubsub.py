@@ -31,11 +31,11 @@ from .error import DecodeError
 from .error import RequestParseError
 from .error import AuthenticateError
 from .error import AuthenticatorInvalidSignature
-from .core import Endpoint
+from .core import Endpoint, Process
 from .encoder import MsgPackEncoder
 
 
-class Subscriber(Endpoint):
+class Subscriber(Endpoint, Process):
     """ A Subscriber executes various functions in response to
     different subscriptions it is subscribed to """
 
