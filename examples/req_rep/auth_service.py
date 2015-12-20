@@ -10,7 +10,7 @@ import random
 import hashlib
 import logging
 
-from nanoservice import Service
+from nanoservice import Responder
 from nanoservice import Authenticator
 from nanoservice import config
 
@@ -40,7 +40,7 @@ def main():
     conf_filepath = sys.argv[1]
     CONF = config.load(conf_filepath)
 
-    service = Service(
+    service = Responder(
         'ipc:///tmp/auth-example-service.sock',
         authenticator=Authenticator(
             CONF.authenticator['secret'], hashlib.sha256
