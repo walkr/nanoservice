@@ -2,6 +2,11 @@ Changelog
 =========
 
 
+### In Progress
+
+* Add pickle encoder
+
+
 ### 0.7.1
 
 * Subscriber bug fix
