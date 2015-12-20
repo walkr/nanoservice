@@ -2,6 +2,11 @@ Changelog
 =========
 
 
+### 0.7.1
+
+* Subscriber bug fix
+
+
 ### 0.7.0
 
 This release includes heavy refactoring
