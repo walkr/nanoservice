@@ -49,12 +49,12 @@ $ pip install nanoservice (it's broken)
 The service:
 
 ```python
-from nanoservice import Service
+from nanoservice import Responder
 
 def echo(msg):
     return msg
 
-s = Service('ipc:///tmp/service.sock')
+s = Responder('ipc:///tmp/service.sock')
 s.register('echo', echo)
 s.start()
 ```
@@ -67,9 +67,9 @@ $ python echo_service.py
 The client:
 
 ```python
-from nanoservice import Client
+from nanoservice import Requester
 
-c = Client('ipc:///tmp/service.sock')
+c = Requester('ipc:///tmp/service.sock')
 res, err = c.call('echo', 'hello world’)
 print('Result is {}'.format(res))
 ```
