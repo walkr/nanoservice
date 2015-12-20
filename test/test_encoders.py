@@ -35,7 +35,8 @@ def test_encoding():
     addr = 'ipc:///tmp/test-service01.sock'
 
     authenticators = [None, Authenticator('my-secret', hashlib.sha256)]
-    encoders = [encoder.JSONEncoder(), encoder.MsgPackEncoder()]
+    encoders = [encoder.JSONEncoder(), encoder.MsgPackEncoder(),
+                encoder.PickleEncoder()]
 
     for test, expected in TESTS:
         for enc in encoders:

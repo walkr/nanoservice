@@ -24,6 +24,7 @@ SOFTWARE.
 '''
 
 import json
+import pickle
 import logging
 import msgpack
 
@@ -68,3 +69,16 @@ class MsgPackEncoder(Encoder):
 
     def decode(self, data):
         return msgpack.unpackb(data, encoding='utf-8')
+
+
+class PickleEncoder(Encoder):
+    """ Pickle encoder for nanoservice message """
+
+    def __init__(self):
+        super(PickleEncoder, self).__init__()
+
+    def encode(self, data):
+        return pickle.dumps(data)
+
+    def decode(self, data):
+        return pickle.loads(data)
