@@ -10,13 +10,13 @@ from nanoservice import Authenticator
 class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.addr = 'ipc:///tmp/reqrep-test-service.sock'
+        self.addr = 'ipc:///tmp/test-reqprep.sock'
 
     def tearDown(self):
         self.client.socket.close()
 
     def start_service(self, addr, authenticator=None):
-        s = Responder(addr, authenticator=authenticator)
+        s = Responder(addr, authenticator=authenticator, timeouts=(3000, 3000))
         s.register('divide', lambda x, y: x / y)
         s.start()
 
@@ -26,7 +26,7 @@ class TestTCPProtocol(BaseTestCase):
     def make_req(self, *args):
         proc = Process(target=self.start_service, args=(self.addr,))
         proc.start()
-        self.client = Requester(self.addr)
+        self.client = Requester(self.addr, timeouts=(3000, 3000))
         res, err = self.client.call('divide', *args)
         proc.terminate()
         return res, err
@@ -49,7 +49,8 @@ class TestAuthentication(BaseTestCase):
         proc = Process(target=self.start_service,
                        args=(self.addr, auth))
         proc.start()
-        self.client = Requester(self.addr, authenticator=auth)
+        self.client = Requester(
+            self.addr, authenticator=auth, timeouts=(3000, 3000))
         res, err = self.client.call('divide', *args)
         proc.terminate()
         return res, err
@@ -65,7 +66,7 @@ class TestErrors(BaseTestCase):
     def make_req(self, *args):
         proc = Process(target=self.start_service, args=(self.addr,))
         proc.start()
-        self.client = Requester(self.addr)
+        self.client = Requester(self.addr, timeouts=(3000, 3000))
 
         # Change encoder to force service to fail on encoding
         # since the service uses a MsgPack encoder
