@@ -21,7 +21,7 @@ This release includes heavy refactoring
 * Added a new abstract class Endpoint
 * Rewrote process method of Subscriber
 * Any endpoint (Requester, Publisher, etc) can now be `binded` OR `connected` to a nanomsg address; simply supply the boolean flag `bind` when instantiated.
-* Add support for timeouts. When instantiating an endpoint, just supply a pair `timeouts=(10, 10)` which represents (sendTimeout, recvTimeout)
+* Add support for timeouts. When instantiating an endpoint, just supply a pair `timeouts=(10, 10)` which represents (sendTimeout, recvTimeout) AS MILLISECONDS
 
 
 ### 0.5.0
