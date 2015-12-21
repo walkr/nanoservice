@@ -2,9 +2,10 @@ Changelog
 =========
 
 
-### In Progress
+### 0.7.2
 
 * Add pickle encoder
+* Add timeouts to tests
 
 
 ### 0.7.1
